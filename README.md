@@ -2,16 +2,20 @@
 
 A comprehensive tool for designing and optimizing bacterial culture experiments using slow-release formate beads. This project combines biological modeling (Monod kinetics), Model Predictive Control (MPC), and practical laboratory constraints to help researchers plan experiments efficiently.
 
+**Two interfaces available:**
+- 🖥️ **Streamlit GUI** - Point-and-click web interface (no coding required)
+- 📓 **Jupyter Notebook** - Full transparency and customization
+
 ---
 
 ## 🧬 Scientific Background
 
 ### The Experimental Challenge
 
-Growing bacterial cultures with formate as the carbon source presents unique challenges:
+Growing bacterial cultures with formate as the energy source presents unique challenges:
 
 1. **Formate Toxicity**: High concentrations can inhibit bacterial growth
-2. **Alkalinization**: Formate consumption releases OH⁻, raising pH and disrupting membrane permeability
+2. **Alkalinization**: Formate consumption depletes protons from the medium, increasing pH and disrupting membrane permeability.
 3. **Depletion Risk**: Bacteria consume formate continuously; if depleted, growth stops
 4. **Manual Labor**: Traditional methods require frequent substrate additions and pH monitoring
 
@@ -141,112 +145,178 @@ Infrequent checks (2 days) + Higher threshold (90-95%) = Must act early, can't c
 
 ## 🖥️ Two User Interfaces
 
-### 1. Streamlit GUI (`formate_beads_gui.py`)
+### 1. 🚀 Quick Start: Streamlit GUI (Recommended for Most Users)
 
 **Best for**: Quick experiment design, non-programmers, presentation-ready outputs
 
-#### Features:
-- ✅ **No coding required** - Pure point-and-click interface
-- ✅ **Real-time visualization** - Adjust parameters, see results instantly
-- ✅ **Interactive controls** - Sliders and input fields in left sidebar
-- ✅ **Export ready** - Download bead schedule and HCl requirements as CSV
-- ✅ **Professional plots** - 6-subplot figure with all experiment dynamics
-- ✅ **Easy sharing** - Can be deployed to web for remote access
+#### Installation & Launch:
 
-#### Running the GUI:
+```bash
+# Install dependencies
+pip install -r requirements_gui.txt
 
-# Activate your Python environment
-conda activate evya_venv
-
-# Run Streamlit
+# Launch the GUI
 streamlit run formate_beads_gui.py
 ```
 
-The interface opens in your browser at `http://localhost:8501`
+The interface opens automatically in your browser at `http://localhost:8501`
+
+#### GUI Features:
+- ✅ **No coding required** - Pure point-and-click interface
+- ✅ **Real-time visualization** - Adjust parameters, see results instantly
+- ✅ **Bead Release Profile Plots** - Visual reference for M07 and M03 characteristics
+- ✅ **8 Interactive plots** - Complete experiment dynamics
+- ✅ **Combined intervention schedule** - Beads + HCl in single CSV (minimizes lab visits)
+- ✅ **Export ready** - Download complete protocol as CSV
+- ✅ **Professional outputs** - Publication-quality figures
 
 #### Using the GUI:
 
 **Step 1: Configure Parameters (Left Sidebar)**
-- **Culture volume** (L): Your bioreactor or flask volume
-- **Initial OD**: Starting bacterial density
-- **Target concentration** (mmol/L): Desired formate level (typically 20-50)
-- **Lower threshold** (80-99%): When to add beads (% of target that triggers addition)
-- **Intervention interval** (0.1-7.0 days): How often you'll check
-- **Experiment days**: Total duration
-- **Simulation dt**: Time resolution (leave at 0.01 for accuracy)
+- **Culture volume** (L): Your bioreactor or flask volume (0.05-10 L)
+- **Initial OD**: Starting bacterial density (0.01-0.1 typical)
+- **Target concentration** (mmol/L): Desired formate level (20-50 typical)
+- **Lower threshold** (80-99%): When to add beads (95% = tight control)
+- **Intervention interval** (0.1-7.0 days): How often you'll check (1.0 = daily)
+- **Experiment days**: Total duration (3-14 days typical)
+- **Simulation dt**: Time resolution (0.01 recommended, 0.001 for high precision)
 
 **Step 2: Run Simulation**
 - Click **"🚀 Run Simulation"** button
 - Wait 1-5 seconds for calculations
+- See summary metrics at top (avg substrate, total beads, final OD, HCl needed)
 
-**Step 3: Explore Results (Tabs)**
-- **📈 Plots**: All 6 plots showing substrate, growth, beads, rates, HCl
-- **📋 Bead Schedule**: Day-by-day table of what to add (download CSV)
-- **🧪 HCl Requirements**: Total and daily HCl needs with practical volumes
-- **📊 Statistics**: Performance metrics and mass balance verification
+**Step 3: Navigate Results (3 Tabs)**
 
-**Step 4: Export Data**
-- Download CSV files for lab notebook
-- Right-click plots to save images
+**📈 Plots Tab:**
+- **Bead Release Profiles** - M07 (fast initial) and M03 (sustained) release curves
+- **Substrate Concentration** - With target and action threshold lines
+- **Bacterial Growth** - OD trajectory over time
+- **Bead Addition Schedule** - When and how many beads to add
+- **Release vs Consumption** - Real-time balance of supply and demand
+- **Cumulative Consumption & HCl** - Total formate used and pH control needs
+- **HCl Addition Rate** - When to add HCl for pH control
+
+**📋 Intervention Schedule Tab:**
+- **Combined table** with: Time (days), M07 Beads, M03 Beads, Total Beads, HCl (mmol), HCl (mg)
+- **Summary metrics**: Total interventions, total beads (M07/M03), total HCl
+- **Practical HCl volumes**: For 12M, 6M, and 1M stock solutions
+- **Single CSV download**: Complete protocol for the lab bench
+
+**📊 Statistics Tab:**
+- **Substrate control performance**: Average, range, standard deviation
+- **Bacterial growth**: Initial/final OD, growth factor, max growth rate
+- **Bead usage**: Total beads, addition events, max release rate
+- **Mass balance verification**: Checks if consumed substrate matches OD increase
+
+**Step 4: Export & Execute**
+- Download intervention schedule CSV
+- Print or save for lab notebook
+- Follow schedule: At each time point, add both beads AND HCl together
+- One lab visit per row = minimal work!
+
+#### Intervention Interval Guidelines
+
+The **intervention interval** determines how often you physically add beads and HCl:
+
+**Daily (1.0 day)** - Standard protocol
+```
+Suitable for: Regular lab operations
+Commitment: Check once per day
+Control: Good substrate stability
+Recommended threshold: 90-95%
+```
+
+**Twice Daily (0.5 days)** - Enhanced control
+```
+Suitable for: Critical experiments, high-growth cultures
+Commitment: Check every 12 hours
+Control: Excellent stability, minimal oscillations
+Recommended threshold: 85-95%
+```
+
+**Every 2 Days (2.0 days)** - Minimal intervention
+```
+Suitable for: Weekend/holiday coverage
+Commitment: Check every other day
+Control: Acceptable with some oscillations
+Recommended threshold: 70-80%
+```
+
+**Key principle**: Shorter intervals → tighter control but more work. Longer intervals → larger additions less frequently.
 
 ---
 
-### 2. Jupyter Notebook (`formate_beads_notebook.ipynb`)
+### 2. 📓 Advanced: Jupyter Notebook (For Detailed Analysis)
 
-**Best for**: Detailed analysis, parameter exploration, understanding the algorithm, customization
+**Best for**: Understanding the algorithm, parameter exploration, customization, research
 
-#### Features:
-- ✅ **Full transparency** - See every step of the calculation
-- ✅ **Extensive documentation** - Comments explain the science and code
-- ✅ **Modifiable** - Easy to test different parameters or modify algorithms
-- ✅ **Educational** - Great for learning how MPC works
-- ✅ **Advanced analysis** - Mass balance checks, sanity tests included
+#### Launch:
 
-#### Running the Notebook:
-
-```
-# Activate your Python environment
-conda activate evya_venv
-
-# Launch Jupyter
+```bash
+# Option 1: Jupyter Notebook
 jupyter notebook formate_beads_notebook.ipynb
 
-# Or use VS Code's built-in notebook support
+# Option 2: VS Code (with Jupyter extension)
+# Just open the .ipynb file
 ```
 
-#### Structure of the Notebook:
+#### Notebook Features:
+- ✅ **Full transparency** - See every calculation step
+- ✅ **Extensive documentation** - Comments explain the science
+- ✅ **Modifiable** - Easy to customize algorithms
+- ✅ **Educational** - Learn how MPC works
+- ✅ **Advanced analysis** - Mass balance checks, sanity tests
 
-**Cell 1: Configuration**
-- Edit all experiment parameters here (volume, OD, target, threshold, interval)
-- Displays current configuration
+#### Notebook Structure:
 
-**Cells 2-3: Bead Release Profiles**
-- Corrects empirical data for linear interpolation
-- Creates M07 and M03 release functions
+**Section 1: Configuration (Cell 1)**
+```python
+# Edit all parameters here
+VOLUME = 0.1  # L
+INITIAL_OD = 0.02
+TARGET_CONCENTRATION = 30  # mmol/L
+LOWER_THRESHOLD = 0.95  # 95% of target
+INTERVENTION_INTERVAL = 1.0  # days
+EXPERIMENT_DAYS = 7
+```
 
-**Cells 4-5: Monod Kinetics & Calculator Class**
+**Section 2: Bead Release Profiles (Cells 2-3)**
+- Defines M07 and M03 empirical release data
+- Corrects for linear interpolation
+- Visualizes release curves with area under curve
+
+**Section 3: Monod Kinetics (Cell 4)**
 - Implements bacterial growth equations
-- Defines the `ConstantSubstrateCalculator` class
+- Growth rate: μ = μ_max × [S] / (K_s + [S])
+- Consumption rate: consumption = μ × OD / Y_xs
 
-**Cell 6: Run Simulation**
-- Executes MPC algorithm with your parameters
-- Shows timeline and prints progress
+**Section 4: Calculator Class (Cell 5)**
+- Complete MPC algorithm implementation
+- Bead scheduling logic
+- Intervention timing control
 
-**Cell 7: Visualization**
-- Generates all 6 plots with detailed annotations
-- Same output as GUI but customizable
+**Section 5: Run Simulation (Cell 6)**
+- Execute with your parameters
+- Shows progress timeline
+- Generates results dictionary
 
-**Cell 8: Bead Schedule Table**
-- Prints day-by-day additions with HCl requirements
-- Shows totals and practical volumes
+**Section 6: Comprehensive Plots (Cell 7)**
+- All 6 plots (same as GUI)
+- Customizable matplotlib figures
+- Publication-quality outputs
 
-**Cell 9: Summary Statistics**
-- Performance metrics (avg substrate, OD growth, etc.)
-- HCl requirements for different stock concentrations
+**Section 7: Bead Schedule (Cell 8)**
+- Formatted table of interventions
+- HCl requirements
+- Practical volumes for stock solutions
 
-**Cell 10: Mass Balance Verification**
-- Sanity check: Does consumed substrate match OD increase?
-- Verifies yield coefficient accuracy
+**Section 8: Statistics (Cell 9)**
+- Performance metrics
+- Mass balance verification
+- Detailed analysis
+
+**To use**: Just run all cells (Cell → Run All) or step through one by one.
 
 ---
 
@@ -386,20 +456,32 @@ else:
 
 ## 📦 Installation
 
-### Requirements
+### Quick Install:
 
 ```bash
-# Install dependencies
+# Install all dependencies
 pip install -r requirements_gui.txt
 
-# Contents: streamlit, numpy, matplotlib, pandas, scipy
+# This installs: streamlit, numpy, matplotlib, pandas, scipy
 ```
 
-### For Notebook:
+### For Notebook Only:
 
 ```bash
-pip install jupyter notebook
-# or use VS Code with Jupyter extension
+# If you only want the notebook
+pip install jupyter notebook numpy matplotlib pandas scipy
+
+# Or use VS Code with Jupyter extension (recommended)
+```
+
+### Verify Installation:
+
+```bash
+# Check Streamlit
+streamlit --version
+
+# Check Jupyter (if using notebook)
+jupyter --version
 ```
 
 ---
@@ -458,24 +540,65 @@ Perfect for:
 
 ## 🔧 Troubleshooting
 
-### GUI won't start
+### GUI Issues
+
+**GUI won't start:**
 ```bash
 # Check Streamlit installation
 streamlit --version
 
-# Reinstall
+# Reinstall if needed
 pip install streamlit --upgrade
+
+# Try running in a new terminal
 ```
 
-### Simulation errors
+**Plots not showing:**
+- Refresh the page (F5)
+- Check browser console for errors
+- Try a different browser (Chrome/Firefox work best)
+- Clear browser cache
+
+**Simulation is slow:**
+- Increase dt from 0.001 to 0.01 (faster, still accurate)
+- Reduce experiment duration
+- Close other browser tabs
+
+### Notebook Issues
+
+**Kernel errors:**
+```bash
+# Restart kernel: Kernel → Restart
+# Or reinstall packages in the notebook environment
+```
+
+**Plots don't display:**
+- Make sure you ran the import cells
+- Try `%matplotlib inline` at the top
+- Restart kernel and run all cells
+
+### General Issues
+
+**Simulation errors:**
 - Check that initial OD > 0
 - Ensure target concentration > 0
 - Verify intervention_interval ≤ experiment_days
+- Make sure dt < intervention_interval
 
-### Unrealistic results
+**Unrealistic results:**
 - Lower threshold too low? Try 85-95%
 - Intervention interval too long? Try 1.0 day
 - Check Monod parameters match your bacterial strain
+- Verify bead release profiles are correct
+
+**Import errors:**
+```bash
+# Make sure all packages are installed
+pip install streamlit numpy matplotlib pandas scipy jupyter
+
+# Check Python version (3.8+ required)
+python --version
+```
 
 ---
 
@@ -502,20 +625,40 @@ For questions or issues:
 
 **Want to design an experiment RIGHT NOW?**
 
+### GUI Method (Fastest):
+
 ```bash
-# 1. Install
-pip install streamlit numpy matplotlib pandas scipy
+# 1. Install (one time only)
+pip install streamlit numpy matplotlib pandas
 
 # 2. Run GUI
 streamlit run formate_beads_gui.py
 
 # 3. Configure in sidebar (or use defaults)
 
-# 4. Click "Run Simulation"
+# 4. Click "🚀 Run Simulation"
 
-# 5. Download CSV files from tabs
+# 5. Go to "📋 Intervention Schedule" tab
 
-# 6. Start your experiment!
+# 6. Download CSV
+
+# 7. Follow the schedule in your lab!
+```
+
+### Notebook Method:
+
+```bash
+# 1. Open notebook
+jupyter notebook formate_beads_notebook.ipynb
+# or open in VS Code
+
+# 2. Edit parameters in Cell 1
+
+# 3. Run all cells (Cell → Run All)
+
+# 4. View results and schedule
+
+# 5. Copy schedule to lab notebook
 ```
 
 ---
@@ -528,4 +671,65 @@ Academic use encouraged. Cite appropriately in publications.
 
 **Version**: 2.0 (January 2026)  
 **Author**: Evyatar  
-**Last Updated**: 2026-01-17
+**Last Updated**: 2026-01-20  
+**Interfaces**: Streamlit GUI + Jupyter Notebook
+
+---
+
+## 📁 Project Files
+
+- `formate_beads_gui.py` - Streamlit web interface (main GUI application)
+- `formate_beads_notebook.ipynb` - Jupyter notebook (detailed analysis)
+- `test_formate_beads.py` - Comprehensive test suite for validation
+- `requirements_gui.txt` - Python dependencies
+- `README.md` - This comprehensive guide
+- `README_GUI.md` - GUI-specific documentation (deprecated, now merged here)
+
+---
+
+## 🧪 Testing
+
+A comprehensive test suite is provided to validate the functionality of the module.
+
+### Running Tests:
+
+```bash
+# Option 1: Using pytest (recommended)
+pip install pytest
+pytest test_formate_beads.py -v
+
+# Option 2: Direct execution
+python test_formate_beads.py
+```
+
+### Test Coverage:
+
+The test suite includes:
+- **Bead Release Profiles**: Validates release data integrity and profiles
+- **Bead Class**: Tests individual bead behavior and release calculations
+- **BeadManager**: Tests multi-bead management and total release
+- **Monod Kinetics**: Validates growth and consumption rate calculations
+- **Calculator**: Tests the main MPC algorithm and bead scheduling
+- **Intervention Intervals**: Tests different intervention timing scenarios
+- **Edge Cases**: Validates boundary conditions (small volumes, high OD, etc.)
+- **Mass Balance**: Verifies conservation of mass (yield coefficient consistency)
+
+### Example Output:
+
+```
+test_bead_release_before_addition ... ok
+test_calculate_bead_schedule_basic ... ok
+test_growth_rate_at_half_saturation ... ok
+test_mass_balance_verification ... ok
+...
+
+======================================================================
+TEST SUMMARY
+======================================================================
+Tests run: 45
+Successes: 45
+Failures: 0
+Errors: 0
+
+✅ ALL TESTS PASSED!
+```
